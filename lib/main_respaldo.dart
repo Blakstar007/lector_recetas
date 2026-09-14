@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'servicios/servicio_voz.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
@@ -22,9 +22,7 @@ class LectorRecetasApp extends StatelessWidget {
       title: 'Lector de Recetas',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.teal,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
       ),
       home: const PantallaInicio(),
@@ -42,10 +40,7 @@ class PantallaInicio extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Lector de Recetas'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Lector de Recetas'), centerTitle: true),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -65,10 +60,7 @@ class PantallaInicio extends StatelessWidget {
               const Text(
                 'Comprende tu receta médica',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
               ),
 
               const SizedBox(height: 12),
@@ -76,10 +68,7 @@ class PantallaInicio extends StatelessWidget {
               const Text(
                 'Toma una fotografía de tu receta y recibe ayuda para leer y comprender sus indicaciones.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  height: 1.4,
-                ),
+                style: TextStyle(fontSize: 18, height: 1.4),
               ),
 
               const SizedBox(height: 35),
@@ -107,9 +96,7 @@ class PantallaInicio extends StatelessWidget {
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text(
-                        'Esta sección se agregará más adelante.',
-                      ),
+                      content: Text('Esta sección se agregará más adelante.'),
                     ),
                   );
                 },
@@ -124,9 +111,7 @@ class PantallaInicio extends StatelessWidget {
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text(
-                        'Esta sección se agregará más adelante.',
-                      ),
+                      content: Text('Esta sección se agregará más adelante.'),
                     ),
                   );
                 },
@@ -154,11 +139,7 @@ class PantallaInicio extends StatelessWidget {
               const Text(
                 'Esta aplicación es una herramienta de apoyo. No sustituye al personal médico, no diagnostica y no prescribe medicamentos.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                  height: 1.4,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey, height: 1.4),
               ),
             ],
           ),
@@ -192,16 +173,10 @@ class BotonMenu extends StatelessWidget {
       height: 72,
       child: ElevatedButton.icon(
         onPressed: onPressed,
-        icon: Icon(
-          icono,
-          size: 32,
-        ),
+        icon: Icon(icono, size: 32),
         label: Text(
           texto,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: color,
@@ -228,7 +203,6 @@ class PantallaLeerReceta extends StatefulWidget {
 
 class _PantallaLeerRecetaState extends State<PantallaLeerReceta> {
   final ServicioVoz _servicioVoz = ServicioVoz();
-
   final ImagePicker _selectorImagen = ImagePicker();
 
   final TextRecognizer _reconocedorTexto = TextRecognizer(
@@ -241,57 +215,38 @@ class _PantallaLeerRecetaState extends State<PantallaLeerReceta> {
 
   bool _leyendoTexto = false;
 
-  bool _procesandoOCR = false;
-
-  // ---------------------------------------------------
-  // LEER DATOS IMPORTANTES EN VOZ ALTA
-  // ---------------------------------------------------
-
-  Future<void> _leerRecetaEnVozAlta() async {
+    Future<void> _leerRecetaEnVozAlta() async {
     if (_textoReconocido.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Primero debes reconocer una receta.',
+            'Primero debes tomar o seleccionar una fotografía de la receta.',
           ),
         ),
       );
       return;
     }
-
-    final textoParaLeer = _crearTextoImportanteParaVoz();
-
-    if (textoParaLeer.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'No se identificaron datos suficientes para realizar la lectura.',
-          ),
-        ),
-      );
-      return;
-    }
-
-    if (!mounted) return;
 
     setState(() {
       _leyendoTexto = true;
     });
 
-    try {
-      await _servicioVoz.hablar(textoParaLeer);
-    } finally {
-      if (mounted) {
-        setState(() {
-          _leyendoTexto = false;
-        });
-      }
+    final textoParaLeer = '''
+Texto reconocido de la receta:
+
+$_textoReconocido
+
+Aviso importante: esta información proviene del reconocimiento automático de una imagen y puede contener errores. Verifica siempre el texto con la receta original y consulta a un profesional de la salud si algo no es claro.
+''';
+
+    await _servicioVoz.hablar(textoParaLeer);
+
+    if (mounted) {
+      setState(() {
+        _leyendoTexto = false;
+      });
     }
   }
-
-  // ---------------------------------------------------
-  // DETENER LECTURA EN VOZ ALTA
-  // ---------------------------------------------------
 
   Future<void> _detenerLectura() async {
     await _servicioVoz.detener();
@@ -304,120 +259,6 @@ class _PantallaLeerRecetaState extends State<PantallaLeerReceta> {
   }
 
   // ---------------------------------------------------
-  // CREAR TEXTO SEGURO PARA LA LECTURA
-  // ---------------------------------------------------
-
-  String _crearTextoImportanteParaVoz() {
-  final texto = _textoReconocido;
-
-  String buscarCoincidencia(List<RegExp> patrones) {
-    for (final patron in patrones) {
-      final coincidencia = patron.firstMatch(texto);
-
-      if (coincidencia != null) {
-        return coincidencia.group(0)!.trim();
-      }
-    }
-
-    return '';
-  }
-
-  String detectarMedicamento() {
-    final acidoFolico = RegExp(
-      r'\b(?:ácido\s+fólico|acido\s+folico|ac\.\s*f[oó]lico|ac\s*f[oó]lico)\b',
-      caseSensitive: false,
-    ).firstMatch(texto);
-
-    if (acidoFolico != null) {
-      return 'ácido fólico';
-    }
-
-    final otrosMedicamentos = RegExp(
-      r'\b(paracetamol|ibuprofeno|amoxicilina|metformina|omeprazol|losartán|losartan|diclofenaco|naproxeno|azitromicina|insulina)\b',
-      caseSensitive: false,
-    ).firstMatch(texto);
-
-    if (otrosMedicamentos != null) {
-      return otrosMedicamentos.group(0)!.trim();
-    }
-
-    return '';
-  }
-
-  final medicamento = detectarMedicamento();
-
-  final concentracion = buscarCoincidencia([
-    RegExp(
-      r'\b\d+(?:[.,]\d+)?\s*(?:mg|g|mcg|ml|mL|gramos?|miligramos?)\b',
-      caseSensitive: false,
-    ),
-  ]);
-
-  final frecuencia = buscarCoincidencia([
-    RegExp(
-      r'\bcada\s+\d+\s*(?:h|hr|hrs|hora|horas)\b',
-      caseSensitive: false,
-    ),
-    RegExp(
-      r'\b(?:una|dos|tres)\s+veces\s+al\s+d[ií]a\b',
-      caseSensitive: false,
-    ),
-    RegExp(
-      r'\buna\s+vez\s+al\s+d[ií]a\b',
-      caseSensitive: false,
-    ),
-  ]);
-
-  final duracion = buscarCoincidencia([
-    RegExp(
-      r'\bdurante\s+\d+\s*(?:d[ií]as?|semanas?|meses?)\b',
-      caseSensitive: false,
-    ),
-    RegExp(
-      r'\bpor\s+\d+\s*(?:d[ií]as?|semanas?|meses?)\b',
-      caseSensitive: false,
-    ),
-  ]);
-
-  final presentacion = buscarCoincidencia([
-    RegExp(
-      r'\b(tableta|tabletas|cápsula|cápsulas|capsula|capsulas|gotas|jarabe|ampolleta|ampolletas|sobres|solución|solucion)\b',
-      caseSensitive: false,
-    ),
-  ]);
-
-  final partes = <String>[];
-
-  void agregarDato(String titulo, String valor) {
-    if (valor.trim().isNotEmpty) {
-      partes.add('$titulo: $valor');
-    }
-  }
-
-  agregarDato('Medicamento', medicamento);
-  agregarDato('Concentración', concentracion);
-  agregarDato('Frecuencia', frecuencia);
-  agregarDato('Duración', duracion);
-  agregarDato('Presentación', presentacion);
-
-  if (partes.isEmpty) {
-    return '''
-No se identificaron con suficiente claridad los datos importantes de la receta.
-
-Consulta la imagen original con un médico o farmacéutico.
-''';
-  }
-
-  return '''
-Lectura de los datos importantes de la receta.
-
-${partes.join('. ')}.
-
-Advertencia: estos datos fueron extraídos de una imagen y pueden contener errores. Confirma siempre el medicamento, la dosis, la frecuencia y la duración con el médico o farmacéutico. No cambies el tratamiento basándote únicamente en esta lectura.
-''';
-}
-
-  // ---------------------------------------------------
   // BUSCAR UN DATO DENTRO DEL TEXTO RECONOCIDO
   // ---------------------------------------------------
 
@@ -425,29 +266,18 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
     final textoMinusculas = texto.toLowerCase();
 
     for (final patron in patrones) {
-      final posicion = textoMinusculas.indexOf(
-        patron.toLowerCase(),
-      );
+      final posicion = textoMinusculas.indexOf(patron.toLowerCase());
 
       if (posicion != -1) {
-        final textoDesdeCoincidencia = texto.substring(posicion);
+        final fragmento = texto.substring(posicion);
 
-        final finLinea = textoDesdeCoincidencia.indexOf('\n');
+        final finLinea = fragmento.indexOf('\n');
 
         if (finLinea != -1) {
-          return textoDesdeCoincidencia
-              .substring(0, finLinea)
-              .trim();
+          return fragmento.substring(0, finLinea).trim();
         }
 
-        // Limita el resultado cuando el OCR no devuelve saltos de línea.
-        final limite = textoDesdeCoincidencia.length > 80
-            ? 80
-            : textoDesdeCoincidencia.length;
-
-        return textoDesdeCoincidencia
-            .substring(0, limite)
-            .trim();
+        return fragmento.trim();
       }
     }
 
@@ -459,82 +289,54 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
   // ---------------------------------------------------
 
   Widget _tarjetaDatoRevision(String titulo, String valor) {
-  final valorLimpio = valor.trim();
+    final noIdentificado = valor == 'No identificado con seguridad';
 
-  final noIdentificado = valorLimpio.isEmpty ||
-      valorLimpio.toLowerCase() == 'no encontrado' ||
-      valorLimpio.toLowerCase() == 'no identificado';
-
-  return Card(
-    margin: const EdgeInsets.only(bottom: 10),
-    elevation: 1,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Padding(
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
-      child: Row(
+      decoration: BoxDecoration(
+        color: noIdentificado ? Colors.orange.shade50 : Colors.blue.shade50,
+        border: Border.all(
+          color: noIdentificado ? Colors.orange.shade300 : Colors.blue.shade200,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            noIdentificado
-                ? Icons.warning_amber_rounded
-                : Icons.check_circle_outline,
-            color: noIdentificado ? Colors.orange : Colors.teal,
-            size: 28,
+          Text(
+            titulo,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  titulo,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  noIdentificado ? 'No identificado' : valorLimpio,
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: noIdentificado
-                        ? FontWeight.w600
-                        : FontWeight.normal,
-                    color: noIdentificado
-                        ? Colors.orange.shade800
-                        : Colors.black87,
-                  ),
-                ),
-                if (noIdentificado) ...[
-                  const SizedBox(height: 5),
-                  const Text(
-                    'Verifica este dato en la receta original.',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.black54,
-                    ),
-                  ),
-                ],
-              ],
+
+          const SizedBox(height: 6),
+
+          Text(valor, style: const TextStyle(fontSize: 17, height: 1.4)),
+
+          const SizedBox(height: 5),
+
+          Text(
+            noIdentificado
+                ? 'Este dato requiere revisión manual.'
+                : 'Dato localizado en el texto detectado. Confirma con la receta original.',
+            style: TextStyle(
+              fontSize: 12,
+              color: noIdentificado
+                  ? Colors.orange.shade900
+                  : Colors.grey.shade700,
             ),
           ),
         ],
       ),
-    ),
-  );
-}
+    );
+  }
 
   // ---------------------------------------------------
   // SELECCIONAR IMAGEN DESDE CÁMARA O GALERÍA
   // ---------------------------------------------------
 
-  Future<void> _seleccionarImagen(
-    ImageSource origen,
-  ) async {
+  Future<void> _seleccionarImagen(ImageSource origen) async {
     try {
       final XFile? imagen = await _selectorImagen.pickImage(
         source: origen,
@@ -545,8 +347,6 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
         return;
       }
 
-      if (!mounted) return;
-
       setState(() {
         _imagenReceta = imagen;
         _textoReconocido = '';
@@ -556,9 +356,7 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'No se pudo obtener la imagen. Inténtalo nuevamente.',
-          ),
+          content: Text('No se pudo obtener la imagen. Inténtalo nuevamente.'),
         ),
       );
     }
@@ -573,10 +371,8 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
       return;
     }
 
-    if (!mounted) return;
-
     setState(() {
-      _procesandoOCR = true;
+      _leyendoTexto = true;
       _textoReconocido = '';
     });
 
@@ -585,8 +381,7 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
         _imagenReceta!.path,
       );
 
-      final RecognizedText resultado =
-          await _reconocedorTexto.processImage(
+      final RecognizedText resultado = await _reconocedorTexto.processImage(
         imagenParaLeer,
       );
 
@@ -594,15 +389,13 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
 
       setState(() {
         _textoReconocido = resultado.text;
-        _procesandoOCR = false;
+        _leyendoTexto = false;
       });
 
       if (resultado.text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'No se encontró texto claro en la imagen.',
-            ),
+            content: Text('No se encontró texto claro en la imagen.'),
           ),
         );
       }
@@ -610,15 +403,11 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
       if (!mounted) return;
 
       setState(() {
-        _procesandoOCR = false;
+        _leyendoTexto = false;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'No se pudo leer el texto de la imagen.',
-          ),
-        ),
+        const SnackBar(content: Text('No se pudo leer el texto de la imagen.')),
       );
     }
   }
@@ -629,7 +418,6 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
 
   @override
   void dispose() {
-    _servicioVoz.liberar();
     _reconocedorTexto.close();
     super.dispose();
   }
@@ -641,10 +429,7 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Leer receta'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Leer receta'), centerTitle: true),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -656,7 +441,6 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
               // ---------------------------------------------------
               // CUANDO TODAVÍA NO HAY IMAGEN
               // ---------------------------------------------------
-
               if (_imagenReceta == null) ...[
                 const Icon(
                   Icons.receipt_long_outlined,
@@ -669,10 +453,7 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
                 const Text(
                   '¿Cómo deseas agregar tu receta?',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                 ),
 
                 const SizedBox(height: 16),
@@ -680,10 +461,7 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
                 const Text(
                   'Puedes tomar una fotografía de la receta o seleccionar una imagen que ya tengas guardada.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 18,
-                    height: 1.4,
-                  ),
+                  style: TextStyle(fontSize: 18, height: 1.4),
                 ),
 
                 const SizedBox(height: 40),
@@ -694,10 +472,7 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
                     onPressed: () {
                       _seleccionarImagen(ImageSource.camera);
                     },
-                    icon: const Icon(
-                      Icons.camera_alt_outlined,
-                      size: 34,
-                    ),
+                    icon: const Icon(Icons.camera_alt_outlined, size: 34),
                     label: const Text(
                       'Tomar fotografía',
                       style: TextStyle(
@@ -723,10 +498,7 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
                     onPressed: () {
                       _seleccionarImagen(ImageSource.gallery);
                     },
-                    icon: const Icon(
-                      Icons.photo_library_outlined,
-                      size: 34,
-                    ),
+                    icon: const Icon(Icons.photo_library_outlined, size: 34),
                     label: const Text(
                       'Elegir de la galería',
                       style: TextStyle(
@@ -744,19 +516,14 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
                   ),
                 ),
               ]
-
               // ---------------------------------------------------
               // CUANDO YA HAY UNA IMAGEN
               // ---------------------------------------------------
-
               else ...[
                 const Text(
                   'Revisa tu fotografía',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                 ),
 
                 const SizedBox(height: 20),
@@ -803,10 +570,8 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
                 SizedBox(
                   height: 65,
                   child: ElevatedButton.icon(
-                    onPressed: _procesandoOCR
-                        ? null
-                        : _leerTextoDeImagen,
-                    icon: _procesandoOCR
+                    onPressed: _leyendoTexto ? null : _leerTextoDeImagen,
+                    icon: _leyendoTexto
                         ? const SizedBox(
                             width: 24,
                             height: 24,
@@ -815,13 +580,10 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
                               color: Colors.white,
                             ),
                           )
-                        : const Icon(
-                            Icons.menu_book_outlined,
-                            size: 28,
-                          ),
+                        : const Icon(Icons.menu_book_outlined, size: 28),
                     label: Text(
-                      _procesandoOCR
-                          ? 'Analizando receta...'
+                      _leyendoTexto
+                          ? 'Leyendo receta...'
                           : 'Continuar con la lectura',
                       style: const TextStyle(
                         fontSize: 19,
@@ -843,17 +605,13 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
                 // ---------------------------------------------------
                 // RESULTADO DE LA LECTURA
                 // ---------------------------------------------------
-
                 if (_textoReconocido.isNotEmpty) ...[
                   const SizedBox(height: 30),
 
                   const Text(
                     'Revisión de lectura',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
 
                   const SizedBox(height: 8),
@@ -879,13 +637,6 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
                       'ibuprofeno',
                       'amoxicilina',
                       'metformina',
-                      'omeprazol',
-                      'losartán',
-                      'losartan',
-                      'diclofenaco',
-                      'naproxeno',
-                      'azitromicina',
-                      'insulina',
                     ]),
                   ),
 
@@ -898,28 +649,14 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
                       '250 mg',
                       '100 mg',
                       '40 mg',
-                      '5 mg',
-                      '10 mg',
-                      '20 mg',
-                      '50 mg',
-                      '1000 mg',
-                      '5 ml',
-                      '10 ml',
                     ]),
                   ),
 
                   _tarjetaDatoRevision(
                     'Vía de administración',
                     _buscarDato(_textoReconocido, [
-                      'oral',
-                      'intramuscular',
-                      'intravenosa',
-                      'intravenoso',
-                      'sublingual',
-                      'tópica',
-                      'topica',
-                      'cutánea',
-                      'cutanea',
+                      'vía de administración',
+                      'via de administracion',
                     ]),
                   ),
 
@@ -931,42 +668,23 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
                       'cada 8',
                       'cada 6',
                       'cada 4',
-                      'una vez al día',
-                      'una vez al día',
-                      'dos veces al día',
-                      'dos veces al día',
-                      'tres veces al día',
-                      'tres veces al dia',
                     ]),
                   ),
 
                   _tarjetaDatoRevision(
                     'Duración',
-                    _buscarDato(_textoReconocido, [
-                      'durante',
-                      'por',
-                    ]),
+                    _buscarDato(_textoReconocido, ['durante', 'por']),
                   ),
 
                   _tarjetaDatoRevision(
                     'Presentación',
                     _buscarDato(_textoReconocido, [
-                      'tableta',
-                      'tabletas',
-                      'cápsula',
-                      'cápsulas',
-                      'capsula',
-                      'capsulas',
-                      'gotas',
-                      'jarabe',
-                      'ampolleta',
-                      'ampolletas',
-                      'sobres',
-                      'solución',
-                      'solucion',
                       'envase',
                       'caja',
                       'frasco',
+                      'tabletas',
+                      'cápsulas',
+                      'capsulas',
                     ]),
                   ),
 
@@ -984,10 +702,7 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
                     children: [
                       SelectableText(
                         _textoReconocido,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          height: 1.5,
-                        ),
+                        style: const TextStyle(fontSize: 17, height: 1.5),
                       ),
                     ],
                   ),
@@ -999,93 +714,25 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: Colors.amber.shade50,
-                      border: Border.all(
-                        color: Colors.amber.shade700,
-                      ),
+                      border: Border.all(color: Colors.amber.shade700),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Text(
                       'Importante: la lectura automática puede contener errores. No utilices como confirmadas las dosis, concentraciones, horarios o duraciones que no sean claramente legibles. Si existe alguna duda, consulta al médico o farmacéutico.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 18),
-
-                  // ---------------------------------------------------
-                  // BOTÓN DE LECTURA / DETENER LECTURA
-                  // ---------------------------------------------------
-
-                  if (!_leyendoTexto)
-                    SizedBox(
-                      height: 65,
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _leerRecetaEnVozAlta,
-                        icon: const Icon(
-                          Icons.volume_up,
-                          size: 30,
-                        ),
-                        label: const Text(
-                          'Leer receta en voz alta',
-                          style: TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.indigo,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                      ),
-                    )
-                  else
-                    SizedBox(
-                      height: 65,
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _detenerLectura,
-                        icon: const Icon(
-                          Icons.stop,
-                          size: 30,
-                        ),
-                        label: const Text(
-                          'Detener lectura',
-                          style: TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                  const SizedBox(height: 35),
-
-                  const Text(
-                    'Procura que la receta aparezca completa, enfocada y con buena iluminación. Si alguna indicación no se puede leer con claridad, deberá confirmarse con un profesional de la salud.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                      height: 1.4,
+                      style: TextStyle(fontSize: 14, height: 1.4),
                     ),
                   ),
                 ],
               ],
+
+              const SizedBox(height: 35),
+
+              const Text(
+                'Procura que la receta aparezca completa, enfocada y con buena iluminación. Si alguna indicación no se puede leer con claridad, deberá confirmarse con un profesional de la salud.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Colors.grey, height: 1.4),
+              ),
             ],
           ),
         ),
@@ -1125,10 +772,7 @@ class PantallaInformacionImportante extends StatelessWidget {
               const Text(
                 'Información importante',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
               ),
 
               const SizedBox(height: 24),
@@ -1208,18 +852,12 @@ class _TarjetaInformacion extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Colors.grey.shade300,
-        ),
+        border: Border.all(color: Colors.grey.shade300),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icono,
-            color: Colors.teal,
-            size: 30,
-          ),
+          Icon(icono, color: Colors.teal, size: 30),
 
           const SizedBox(width: 14),
 
@@ -1237,13 +875,7 @@ class _TarjetaInformacion extends StatelessWidget {
 
                 const SizedBox(height: 6),
 
-                Text(
-                  texto,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    height: 1.4,
-                  ),
-                ),
+                Text(texto, style: const TextStyle(fontSize: 16, height: 1.4)),
               ],
             ),
           ),
