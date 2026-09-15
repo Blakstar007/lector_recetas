@@ -529,6 +529,252 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
 }
 
   // ---------------------------------------------------
+  // MOSTRAR CONFIRMACIÓN DE RECETA
+  // ---------------------------------------------------
+
+  void _mostrarConfirmacionReceta() {
+    final medicamento = _buscarDato(_textoReconocido, [
+      'ácido fólico',
+      'acido folico',
+      'paracetamol',
+      'ibuprofeno',
+      'amoxicilina',
+      'metformina',
+      'omeprazol',
+      'losartán',
+      'losartan',
+      'diclofenaco',
+      'naproxeno',
+      'azitromicina',
+      'insulina',
+    ]);
+
+    final concentracion = _buscarDato(_textoReconocido, [
+      '0.4 mg',
+      '0,4 mg',
+      '500 mg',
+      '250 mg',
+      '100 mg',
+      '40 mg',
+      '5 mg',
+      '10 mg',
+      '20 mg',
+      '50 mg',
+      '1000 mg',
+      '5 ml',
+      '10 ml',
+    ]);
+
+    final via = _buscarDato(_textoReconocido, [
+      'oral',
+      'intramuscular',
+      'intravenosa',
+      'intravenoso',
+      'sublingual',
+      'tópica',
+      'topica',
+      'cutánea',
+      'cutanea',
+    ]);
+
+    final frecuencia = _buscarDato(_textoReconocido, [
+      'cada 24',
+      'cada 12',
+      'cada 8',
+      'cada 6',
+      'cada 4',
+      'una vez al día',
+      'una vez al dia',
+      'dos veces al día',
+      'dos veces al dia',
+      'tres veces al día',
+      'tres veces al dia',
+    ]);
+
+    final duracion = _buscarDato(_textoReconocido, [
+      'durante',
+      'por',
+    ]);
+
+    final presentacion = _buscarDato(_textoReconocido, [
+      'tableta',
+      'tabletas',
+      'cápsula',
+      'cápsulas',
+      'capsula',
+      'capsulas',
+      'gotas',
+      'jarabe',
+      'ampolleta',
+      'ampolletas',
+      'sobres',
+      'solución',
+      'solucion',
+      'envase',
+      'caja',
+      'frasco',
+    ]);
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (contexto) {
+        return AlertDialog(
+          title: const Text(
+            'Confirmar receta',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Revisa estos datos comparándolos con la imagen original. La aplicación no modifica las indicaciones médicas.',
+                  style: TextStyle(
+                    height: 1.4,
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                _datoConfirmacion(
+                  'Medicamento',
+                  medicamento,
+                ),
+
+                _datoConfirmacion(
+                  'Concentración',
+                  concentracion,
+                ),
+
+                _datoConfirmacion(
+                  'Vía de administración',
+                  via,
+                ),
+
+                _datoConfirmacion(
+                  'Frecuencia',
+                  frecuencia,
+                ),
+
+                _datoConfirmacion(
+                  'Duración',
+                  duracion,
+                ),
+
+                _datoConfirmacion(
+                  'Presentación',
+                  presentacion,
+                ),
+
+                const SizedBox(height: 16),
+
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: Colors.amber.shade700,
+                    ),
+                  ),
+                  child: const Text(
+                    'Antes de continuar, confirma los datos con el médico o farmacéutico. No cambies dosis, horarios ni duración basándote únicamente en esta lectura.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(contexto).pop();
+              },
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(contexto).pop();
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'La receta fue revisada. El guardado se agregará en el siguiente paso.',
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Confirmar revisión'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ---------------------------------------------------
+  // MOSTRAR DATO EN LA CONFIRMACIÓN
+  // ---------------------------------------------------
+
+  Widget _datoConfirmacion(String titulo, String valor) {
+    final valorLimpio = valor.trim();
+
+    final noIdentificado =
+        valorLimpio.isEmpty ||
+        valorLimpio.toLowerCase() == 'no encontrado' ||
+        valorLimpio.toLowerCase() == 'no identificado' ||
+        valorLimpio.toLowerCase() == 'no identificado con seguridad';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            titulo,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            noIdentificado ? 'No identificado' : valorLimpio,
+            style: TextStyle(
+              fontSize: 16,
+              color: noIdentificado
+                  ? Colors.orange.shade800
+                  : Colors.black87,
+              fontWeight: noIdentificado
+                  ? FontWeight.w600
+                  : FontWeight.normal,
+            ),
+          ),
+          if (noIdentificado)
+            const Padding(
+              padding: EdgeInsets.only(top: 3),
+              child: Text(
+                'Verifica este dato en la receta original.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.black54,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------
   // SELECCIONAR IMAGEN DESDE CÁMARA O GALERÍA
   // ---------------------------------------------------
 
@@ -1015,6 +1261,27 @@ Advertencia: estos datos fueron extraídos de una imagen y pueden contener error
                   ),
 
                   const SizedBox(height: 18),
+
+                                    SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        _mostrarConfirmacionReceta();
+                      },
+                      icon: const Icon(Icons.medication_outlined),
+                      label: const Text(
+                        'Registrar esta receta',
+                        style: TextStyle(fontSize: 17),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
 
                   // ---------------------------------------------------
                   // BOTÓN DE LECTURA / DETENER LECTURA
